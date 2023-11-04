@@ -1,0 +1,28 @@
+GRABACIONES CURSADA
+
+Introducción a Bases de Datos. Introducción a SQL Server. Características de las bases de datos relacionales. 
+Concepto de restricción. Restricción de Primary Key, Foreign Key, Check, Unique.
+https://www.youtube.com/watch?v=768-PZ9h5t4&ab_channel=AngelSim%C3%B3n
+
+Normalización. Tipos de Relaciones. Consultas de Acción (Insert, Update, Delete)
+https://www.youtube.com/watch?v=gXZD1UEHdWM&ab_channel=AngelSim%C3%B3n
+
+Actividad de Normalización y Creación de Tablas y Restricciones.
+https://www.youtube.com/watch?v=n844nX4ylrs&ab_channel=AngelSim%C3%B3n
+
+
+Consultas de Selección. Case-When. Coalesce. Datediff.
+Joins: Inner, Left, Right , Full y Cross Join
+https://www.youtube.com/watch?v=GLL5zLrC8vA&ab_channel=AngelSim%C3%B3n
+
+Consultas de Selección: Funciones de Resumen
+https://www.youtube.com/watch?v=ZybBAa2CmZ8&ab_channel=AngelSim%C3%B3n
+
+Procedimientos Almacenados, Funciones y Transacciones
+https://www.youtube.com/watch?v=SvWxI3ILjlc&ab_channel=AngelSim%C3%B3n
+
+Triggers
+https://www.youtube.com/watch?v=1hOa5oCM5hs&ab_channel=AngelSim%C3%B3n
+
+Resolución de Modelo de Examen Integrador
+https://www.youtube.com/watch?v=pw4xzYyC31s&ab_channel=AngelSim%C3%B3n
