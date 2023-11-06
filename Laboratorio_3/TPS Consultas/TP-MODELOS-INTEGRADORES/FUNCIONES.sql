@@ -24,6 +24,8 @@ begin
 
     If @Alias is null And @Existe = 1 begin
         Select @Apellido = Apellidos, @Nombre = Nombres From Usuarios Where ID_Usuario = @ID_Usuario
+	--CAST: convierte el bigint en varchar(6)
+	--UPPER: todo el texto en mayuscula
         Set @Alias = Upper(@Apellido) + '.' + Upper(@Nombre) + '.' + Cast(@ID_Usuario As Varchar(6))
     end
     return @Alias
