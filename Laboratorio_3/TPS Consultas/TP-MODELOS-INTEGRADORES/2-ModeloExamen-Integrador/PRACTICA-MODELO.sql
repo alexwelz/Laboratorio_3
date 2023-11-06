@@ -27,7 +27,7 @@ CREATE TABLE ActividadesxSocio
 
 --2)
 /*
-Haciendo uso de las tablas realizadas en el punto anterior resolver la siguiente consulta de selecciÛn: Listar
+Haciendo uso de las tablas realizadas en el punto anterior resolver la siguiente consulta de selecci√≥n: Listar
 todos los datos de todos los socios que hayan realizado todas las actividades que ofrece el club.
 */
 
@@ -43,12 +43,12 @@ SELECT COUNT(Distinct A.ID_Actividad) FROM Actividades A
     WHERE AXS.ID_Socio = S.ID_Socio
 )
 
---3)
+
 /*
 3)
 Hacer un trigger que al ingresar un registro no permita que un docente pueda tener una materia con el cargo de 
-profesor (IDCargo = 1) si no tiene una antig¸edad de al menos 5 aÒos. Tampoco debe permitir que haya m·s de un docente 
-con el cargo de profesor (IDCargo = 1) en la misma materia y aÒo. Caso contrario registrar el docente a la planta
+profesor (IDCargo = 1) si no tiene una antig√ºedad de al menos 5 a√±os. Tampoco debe permitir que haya m√°s de un docente 
+con el cargo de profesor (IDCargo = 1) en la misma materia y a√±o. Caso contrario registrar el docente a la planta
 docente.
 
 */
@@ -62,10 +62,10 @@ BEGIN
 			DECLARE @IDMateria BIGINT 
 			DECLARE @ANIO INT
 
-			SELECT @DocenteLegajo = Legajo, @IDMateria = ID_Materia, @ANIO = AÒo FROM inserted
+			SELECT @DocenteLegajo = Legajo, @IDMateria = ID_Materia, @ANIO = A√±o FROM inserted
 
 			DECLARE @Antiguedad INT
-			SELECT @Antiguedad = @ANIO - D.AÒoIngreso 
+			SELECT @Antiguedad = @ANIO - D.A√±oIngreso 
 			FROM PlantaDocente PD
 			INNER JOIN Docentes D ON D.Legajo = PD.Legajo 
 			WHERE PD.Legajo = @DocenteLegajo
@@ -73,19 +73,19 @@ BEGIN
 			IF @Antiguedad < 5
 			BEGIN
 				ROLLBACK TRANSACTION
-				RAISERROR ('El docente tiene que tener al menos 5 aÒos de antig¸edad para ser profesor de una materia', 16, 1)
+				RAISERROR ('El docente tiene que tener al menos 5 a√±os de antig√ºedad para ser profesor de una materia', 16, 1)
 			END
 
 			IF EXISTS (
 				SELECT 1 FROM PlantaDocente
-				WHERE ID_Materia = @IDMateria AND AÒo = @Anio AND Legajo <> @DocenteLegajo AND ID_Cargo = 1
+				WHERE ID_Materia = @IDMateria AND A√±o = @Anio AND Legajo <> @DocenteLegajo AND ID_Cargo = 1
 			)
 			BEGIN
 				ROLLBACK;
-				RAISERROR ('Ya existe otro profesor en la misma materia y aÒo', 16, 1);
+				RAISERROR ('Ya existe otro profesor en la misma materia y a√±o', 16, 1);
 			END
 
-			INSERT INTO PlantaDocente (Legajo, ID_Materia, ID_Cargo, AÒo)
+			INSERT INTO PlantaDocente (Legajo, ID_Materia, ID_Cargo, A√±o)
 			VALUES (@DocenteLegajo, @IDMateria, 1, @Anio);
 
 		COMMIT TRANSACTION
@@ -95,18 +95,65 @@ BEGIN
 	END CATCH
 END
 
+
+--3)
+/*
+Hacer un trigger que al ingresar un registro no permita que un docente pueda tener una materia con el cargo de 
+profesor (IDCargo = 1) si no tiene una antig√ºedad de al menos 5 a√±os. Tampoco debe permitir que haya m√°s de un docente 
+con el cargo de profesor (IDCargo = 1) en la misma materia y a√±o. Caso contrario registrar el docente a la planta
+docente.
+*/
+CREATE TRIGGER TR_AgregarDocentePlantaDocente ON PlantaDocente
+AFTER INSERT
+AS
+BEGIN
+    BEGIN TRY
+        BEGIN TRANSACTION
+        DECLARE @DocenteLegajo BIGINT
+        DECLARE @IDMateria BIGINT 
+        DECLARE @AnioIngreso INT
+
+        SELECT @DocenteLegajo = Legajo, @IDMateria = ID_Materia, @AnioIngreso = A√±oIngreso FROM inserted
+
+        DECLARE @Antiguedad INT
+        SET @Antiguedad = DATEDIFF(YEAR, @AnioIngreso, GETDATE())  --Mejor forma para buscar la antiguedad
+
+        IF @Antiguedad < 5
+        BEGIN
+            ROLLBACK TRANSACTION
+            RAISEERROR ('El docente tiene que tener al menos 5 a√±os de antig√ºedad para ser profesor de una materia', 16, 1)
+        END
+
+        IF EXISTS (
+            SELECT 1 FROM PlantaDocente
+            WHERE ID_Materia = @IDMateria AND A√±o = YEAR(GETDATE()) AND Legajo <> @DocenteLegajo AND ID_Cargo = 1
+        )
+        BEGIN
+            ROLLBACK;
+            RAISEERROR ('Ya existe otro profesor en la misma materia y a√±o', 16, 1);
+        END
+
+        INSERT INTO PlantaDocente (Legajo, ID_Materia, ID_Cargo, A√±o)
+        VALUES (@DocenteLegajo, @IDMateria, 1, YEAR(GETDATE()));
+
+        COMMIT TRANSACTION
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION
+    END CATCH
+END
 --4)
 /*
-Hacer una funciÛn SQL que a partir de un legajo docente y un aÒo devuelva la cantidad de horas semanales que dedicar· esa 
-persona a la docencia ese aÒo. La cantidad de horas es un n˙mero entero >= 0.
+Hacer una funci√≥n SQL que a partir de un legajo docente y un a√±o devuelva la cantidad de horas semanales que dedicar√° esa 
+persona a la docencia ese a√±o. La cantidad de horas es un n√∫mero entero >= 0.
 
-NOTA: No hace falta multiplicarlo por la cantidad de semanas que hay en un aÒo.
+NOTA: No hace falta multiplicarlo por la cantidad de semanas que hay en un a√±o.
 
 */
 
 CREATE FUNCTION CantidadHorasSemanales(
 @Legajo bigint,
-@AÒo int
+@A√±o int
 )
 
 RETURNS INT
@@ -117,7 +164,7 @@ BEGIN
 	SELECT @HorasSemanales = SUM(HorasSemanales) FROM Materias M
 	INNER JOIN PlantaDocente PD ON PD.ID_Materia = M.ID_Materia
 	INNER JOIN Docentes D ON PD.Legajo = D.Legajo
-	WHERE @AÒo = PD.AÒo AND PD.Legajo = @Legajo
+	WHERE @A√±o = PD.A√±o AND PD.Legajo = @Legajo
 
 	IF @HorasSemanales < 0 BEGIN
 		--PRINT ('No puede tener horas semanales negativas')
