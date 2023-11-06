@@ -1,12 +1,12 @@
 --1)
 /*
-Se pide agregar una modificaci髇 a la base de datos para que permita registrar la calificaci髇 (de 1 a 10) que el Cliente le 
-otorga al Chofer en un viaje y adem醩 una observaci髇 opcional. Lo mismo debe poder registrar el Chofer del Cliente.
+Se pide agregar una modificaci贸n a la base de datos para que permita registrar la calificaci贸n (de 1 a 10) que el Cliente le 
+otorga al Chofer en un viaje y adem谩s una observaci贸n opcional. Lo mismo debe poder registrar el Chofer del Cliente.
 Importante:
 No se puede modificar la estructura de la tabla de Viajes.
-S髄o se puede realizar una calificaci髇 por viaje del Cliente al Chofer.
-S髄o se puede realizar una calificaci髇 por viaje del Chofer al Cliente.
-Puede haber viajes que no registren calificaci髇 por parte del Chofer o del Cliente.
+S贸lo se puede realizar una calificaci贸n por viaje del Cliente al Chofer.
+S贸lo se puede realizar una calificaci贸n por viaje del Chofer al Cliente.
+Puede haber viajes que no registren calificaci贸n por parte del Chofer o del Cliente.
 
 */
 CREATE TABLE Calificaciones
@@ -23,8 +23,8 @@ GO
 --2)
 /*
 Realizar una vista llamada VW_ClientesDeudores que permita listar: Apellidos, Nombres, Contacto (indica el email 
-de contacto,si no lo tiene el tel閒ono y de lo contrario "Sin datos de contacto"),
- cantidad de viajes totales, cantidad de viajes no abonados y total adeudado. S髄o listar aquellos 
+de contacto,si no lo tiene el tel茅fono y de lo contrario "Sin datos de contacto"),
+ cantidad de viajes totales, cantidad de viajes no abonados y total adeudado. S贸lo listar aquellos 
  clientes cuya cantidad de viajes no abonados sea superior a la mitad de 
 viajes totales realizados.
 */
@@ -51,10 +51,10 @@ WHERE P2.CantViajesNoAbonados > P2.CantidadViajes/2  AND P2.TotalAdeudado > 0
 GO
 --3)
 /*
-Realizar un procedimiento almacenado llamado SP_ChoferesEfectivo que reciba un (a駉 como par醡etro) y permita listar apellidos
-y nombres de los choferes que en ese a駉 (鷑icamente) realizaron viajes que fueron abonados con la forma de pago 'Efectivo'.
+Realizar un procedimiento almacenado llamado SP_ChoferesEfectivo que reciba un (a帽o como par谩metro) y permita listar apellidos
+y nombres de los choferes que en ese a帽o (煤nicamente) realizaron viajes que fueron abonados con la forma de pago 'Efectivo'.
 
-NOTA: Es indistinto si el viaje fue pagado o no. Utilizar la fecha de inicio del viaje para determinar el a駉 del mismo.
+NOTA: Es indistinto si el viaje fue pagado o no. Utilizar la fecha de inicio del viaje para determinar el a帽o del mismo.
 
 */
 
@@ -65,12 +65,12 @@ CREATE PROCEDURE SP_ChoferesEfectivo (
 AS
 BEGIN
 
-	SELECT DISTINCT P3.A袿, P3.Apellidos, P3.Nombres FROM (
-		SELECT YEAR(V.Inicio) AS A袿, C.Apellidos, C.Nombres,
+	SELECT DISTINCT P3.A脩O, P3.Apellidos, P3.Nombres FROM (
+		SELECT YEAR(V.Inicio) AS A脩O, C.Apellidos, C.Nombres,
 		(
 			SELECT COUNT(*) FROM Viajes V WHERE V.IDChofer = C.ID  AND YEAR(V.Inicio) = @ANIO
 			
-		)AS ViajesXA駉,
+		)AS ViajesXA帽o,
 		(
 			SELECT COUNT(*) FROM Viajes V
 			INNER JOIN FormasPago FP ON FP.ID = V.FormaPago
@@ -81,18 +81,27 @@ BEGIN
 		FROM Choferes C
 		INNER JOIN Viajes V ON V.IDChofer = C.ID
 	)AS P3
-	WHERE P3.ViajesEfectivo > 0 AND P3.A袿 = @ANIO  AND P3.ViajesEfectivo = P3.ViajesXA駉
+	WHERE P3.ViajesEfectivo > 0 AND P3.A脩O = @ANIO  AND P3.ViajesEfectivo = P3.ViajesXA帽o
 
 END
 GO
 --4)
 /*
-Realizar un trigger que al borrar un cliente, primero le quite todos los puntos (baja f韘ica) y 
-establecer a NULL todos los viajes de ese cliente. Luego, eliminar f韘icamente el cliente de la
+Realizar un trigger que al borrar un cliente, primero le quite todos los puntos (baja f铆sica) y 
+establecer a NULL todos los viajes de ese cliente. Luego, eliminar f铆sicamente el cliente de la
 base de datos.
 */
 
-
+SELECT * FROM Puntos -- tabla vacia
+--Solucion:
+-----------------------Ejecutamos---------------------------------------------------
+INSERT INTO Puntos
+SELECT ID, NULL, GETDATE(),100, DATEADD(DAY, 10, GETDATE()) FROM Clientes
+--------------------------Ejecutamos------------------------------------------------
+INSERT INTO Puntos
+SELECT ID, NULL, GETDATE(),100, DATEADD(DAY, 10, GETDATE()) FROM Clientes
+WHERE ID <=100
+------------------------------------------------------------------------------------
 
 Create trigger TR_BorrarClientes ON Clientes
 INstead OF DElete
@@ -101,11 +110,11 @@ AS
 BEGIN
 	BEGIN TRY
 		BEGIN TRAN
-			--1.primero le quite todos los puntos (baja f韘ica) 
+			--1.primero le quite todos los puntos (baja f铆sica) 
 			DELETE FROM Puntos WHERE IDCliente = (SELECT ID FROM deleted)
 			--2.establecer a NULL todos los viajes de ese cliente
 			UPDATE Viajes SET IDCliente = NULL WHERE IDCliente = (SELECT ID FROM deleted) 
-			--3.eliminar f韘icamente el cliente de la base de datos.
+			--3.eliminar f铆sicamente el cliente de la base de datos.
 			DELETE FROM Clientes WHERE ID = (SELECT ID FROM deleted)
 		COMMIT 
 	END TRY
@@ -121,7 +130,7 @@ END
 --SELECT * FROM  Viajes where ID=1219 
 GO
 --5)
-/*Realizar un trigger que garantice que el Cliente s髄o pueda calificar al Chofer si el viaje se encuentra pagado.
+/*Realizar un trigger que garantice que el Cliente s贸lo pueda calificar al Chofer si el viaje se encuentra pagado.
 Caso contrario indicarlo con un mensaje aclaratorio.
 */
 
