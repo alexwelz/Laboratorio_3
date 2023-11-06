@@ -33,7 +33,7 @@ CREATE TRIGGER TR_NOMBRETIGGER ON TABLA_DIRIGIDA
 --INSTEAD OF DELETE / INSERT
 AS
 BEGIN
-    BEGIN TRY
+    BEGIN TRY    --> Todo lo que esta dentro del bloque try podria pasar
         BEGIN TRAN -- BEGIN TRANSACTION (es lo mismo)
 
         DECLARE @VARIABLE --TIPO DATO (BIGINT-SMALLINT-BIT....)
