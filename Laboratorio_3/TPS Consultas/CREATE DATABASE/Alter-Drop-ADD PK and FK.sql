@@ -11,14 +11,24 @@ DROP DATABASE MercadoLabo
 DROP TABLE Provincias
 --Borrar el contenido de una tabla sin borrar los campos:
 DELETE FROM Provincias
---borrar una columna de una tabla 
+--borrar una columna de una tabla:
 ALTER TABLE Usuarios
 DROP COLUMN nombre
---agregar columna a tabla existente 
+--agregar columna a tabla existente:
 ALTER TABLE Usuarios 
 ADD Nombre varchar(20) 
-    
---crear tabla con las 3 columnas primary key 
+
+--Restricciones:
+ALTER TABLE Ingredientes
+ADD CONSTRAINT PK_Ingrediente PRIMARY KEY (IDIngrediente)
+GO
+ALTER TABLE Recetas
+ADD CONSTRAINT FK_Recetas_Platos FOREIGN KEY (IDPlato) REFERENCES Platos(IDPlato)
+GO
+ALTER TABLE Platos
+ADD CONSTRAINT CHK_TiempoPreparacion CHECK (TiempoPreparacion>0)
+
+--crear tabla con 3 CAMPOS CON PRIMARY KEY:
 Create table demo(
     Col1 int not null,
     Col2 int not null,
@@ -26,7 +36,7 @@ Create table demo(
     primary key (col1,col2,col3) 
 )
 
---Mostrar solo el año de la fecha de nacimiento }
+--Mostrar solo el año de la fecha de nacimiento 
 SELECT DatePart(YEAR, FechaNacimiento) AS Año From Usuarios
 SELECT YEAR(FechaNacimiento) AS Año FROM Usuarios
 
