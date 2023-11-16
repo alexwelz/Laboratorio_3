@@ -48,7 +48,6 @@ CREATE TABLE Usuarios(
 
 )
 GO
-
 Create Table Billetera(
     ID_Billetera bigint not null primary key identity (10001, 1),
     ID_Usuario bigint not null unique foreign key references Usuarios(ID_Usuario),
@@ -69,7 +68,6 @@ Create Table  Tarjetas(
     CodigoSeguridad varchar(4) not null,
     check (FechaEmision < FechaVencimiento)  --Siempre se agrega despues de crear ambas columnas o alter table
 )
-
 
 
 -----------------------------------------------------------------------------------------------------------------------
@@ -140,8 +138,87 @@ Alter Table Recetas
 add CONSTRAINT CHK_Cantidad CHECK (Cantidad > 0)
 ----------------------------------------------------------------------------------------------------------------
 
-    
-    
+CREATE DATABASE Punto1_ExamenIntegrador
+GO
+USE Punto1_ExamenIntegrador
+GO
+CREATE TABLE  Carreras (
+	IDCarrera Bigint not null primary key identity(1,1),
+	Nombre varchar(200) not null 
+
+)
+GO 
+CREATE TABLE Materias(
+	IDMateria Bigint not null primary key identity(1,1),
+	IDCarrera Bigint not null foreign key references Carreras(IDCarrera),
+	Nombre varchar(200) not null,
+	Año tinyint not null CHECK (Año > 0),
+	Cuatrimestre  tinyint not null
+)
+
+GO 
+CREATE TABLE Alumnos(
+	Legajo bigint not null primary key,
+	Apellidos varchar(200) not null,
+	Nombres varchar(200) not null
+)
+GO
+CREATE TABLE Examenes(
+	IDExamen Bigint not null primary key identity(1,1),
+	IDMateria Bigint not null foreign key references Materias(IDMateria),
+	Legajo bigint not null foreign key references Alumnos(Legajo),
+	Fecha date not null,
+	Nota decimal(4,2) not null check(Nota between 1.00 and 10.00)
+	
+)
+GO
+CREATE TABLE Sanciones
+(
+	IDSancion Bigint not null primary key identity(1,1),
+	Legajo bigint not null foreign key references Alumnos(Legajo),
+	Fecha date not null,
+	Observaciones varchar(600) not null
+
+)
+Go 
+
+-----------------------------------------------------------------------------------------------
+
+CREATE DATABASE Punto5_PracticaExamenIntegrador
+GO 
+USE Punto5_PracticaExamenIntegrador
+GO
+CREATE TABLE TipoCuentas(
+	IDTipoCuenta bigint not null primary key identity(1,1),
+	Nombre varchar(50) not null ,
+	CapacidadEnMB int not null
+)
+GO 
+CREATE TABLE Usuarios (
+	IDUsuarios bigint not null primary key identity(1,1),
+	IDTipoCuenta bigint not null foreign key references TipoCuentas(IDTipoCuenta),
+	NombreUsuario varchar(50) not null
+)
+GO
+CREATE TABLE CambiosDeCuenta(
+	IDUsuario bigint not null foreign key references Usuarios(IDUsuarios),
+	IDTipoCuentaAnterior  bigint not null foreign key references TipoCuentas(IDTipoCuenta),
+	IDTipoCuentaActual  bigint not null foreign key references TipoCuentas(IDTipoCuenta),
+	Fecha date not null
+)
+GO 
+CREATE TABLE Archivos(
+	IDArchivo bigint not null primary key identity(1,1),
+	IDUsuario bigint not null foreign key references Usuarios(IDUsuarios),
+	NombreArchivo varchar(50) not null,
+	Descripcion varchar(250) not null,
+	Extension varchar(5) not null,
+	TamañoEnMB int not null,
+	FechaPublicacion date not null
+
+)
+
+
     
 --------------------------------------------------------------------------------------------------------
 -- ALTER TABLE, DROP, ADD COLUMN, DROP COLUMN, INSERT INTO (GPT) ETC... check(LEN(RTrim(LTrim(Numero)))
