@@ -62,7 +62,7 @@ Create Table  Tarjetas(
     ID_Billetera bigint not null foreign key references Billetera(ID_Billetera),
     ID_MarcaTarjeta tinyint not null foreign key references MarcasTarjeta(ID_MarcaTarjeta),
     ID_Banco smallint not null foreign key references Bancos(ID_Banco),
-    Numero varchar(16) not null unique check(LEN(RTrim(LTrim(Numero))) = 16),
+    Numero varchar(16) not null unique check(LEN(RTrim(LTrim(Numero))) = 16),-- abajo de todo explica el funcionamiento LEN(RTrim(LTrim(Numero)))
     FechaEmision date not null,
     FechaVencimiento date not null,
     CodigoSeguridad varchar(4) not null,
