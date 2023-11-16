@@ -61,7 +61,7 @@ CREATE TABLE Usuarios(
     Apellido varchar(200) not null,
     Nombre varchar (200)  not null,  
     FechaNacimiento date not null check (FechaNacimiento <= getdate()),
-    Genero char null,
+    Genero char(1) not null CHECK(Genero='F' OR Genero ='M'),
     ID_SituacionCrediticia tinyint foreign key references NivelesSituacionCrediticia(ID_NivelSituacionCrediticia),
     Telefono varchar (20) null,
     Celular varchar (20) null,
