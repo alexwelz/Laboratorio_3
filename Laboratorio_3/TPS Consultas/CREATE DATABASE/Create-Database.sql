@@ -127,5 +127,9 @@ Domicilios (X)
 Movimientos (-) 
 Pagos (-) 
 DatosDeContacto (X)
+
+- Vamos a olvidar (X)  -> Podria ir/probablemente no se use nunca
+- A futuro vamos resolver (-)
+- 1 usuario puede tener 1 billetera (1:1)
 -------------------------------------------------------
 */
