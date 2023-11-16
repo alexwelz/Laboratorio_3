@@ -241,7 +241,7 @@ CREATE TABLE Examenes(
 	IDMateria Bigint not null foreign key references Materias(IDMateria),
 	Legajo bigint not null foreign key references Alumnos(Legajo),
 	Fecha date not null,
-	Nota decimal(4,2) not null check(Nota between 1.00 and 10.00)
+	Nota decimal(4,2) not null check(Nota between 0.00 and 10.00)
 	
 )
 GO
