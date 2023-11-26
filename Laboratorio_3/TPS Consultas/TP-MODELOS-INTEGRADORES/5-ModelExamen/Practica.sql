@@ -1,8 +1,18 @@
 -- Legajo: XXXX
--- Apellido y nombre: Simón, Angel
+-- Alumno: 
 
--- 1)
 
+--1)
+/*
+Se pide agregar una modificación a la base de datos para que permita registrar la calificación (de 1 a 10) que el Cliente le 
+otorga al Chofer en un viaje y además una observación opcional. Lo mismo debe poder registrar el Chofer del Cliente.
+Importante:
+No se puede modificar la estructura de la tabla de Viajes.
+Sólo se puede realizar una calificación por viaje del Cliente al Chofer.
+Sólo se puede realizar una calificación por viaje del Chofer al Cliente.
+Puede haber viajes que no registren calificación por parte del Chofer o del Cliente.
+
+*/
 -- Create Table Calificaciones(
 --     IDViaje bigint not null primary key foreign key references Viajes(ID),
 --     CalificacionAlChofer tinyint not null check (CalificacionAlChofer Between 1 And 10),
@@ -23,10 +33,16 @@ Create Table CalificacionesAlCliente(
     Observaciones text null
 )
 
-
-
 Go
+    
 -- 2)
+    /*
+Realizar una vista llamada VW_ClientesDeudores que permita listar: Apellidos, Nombres, Contacto (indica el email 
+de contacto,si no lo tiene el teléfono y de lo contrario "Sin datos de contacto"),
+ cantidad de viajes totales, cantidad de viajes no abonados y total adeudado. Sólo listar aquellos 
+ clientes cuya cantidad de viajes no abonados sea superior a la mitad de 
+viajes totales realizados.
+*/
 Create View VW_ClientesDeudores
 As 
 Select Punto2.* From (
@@ -45,6 +61,14 @@ Select Punto2.* From (
 Where Punto2.CantidadViajesNoAbonados > Punto2.CantidadViajesTotales/2
 Go
 -- 3)
+/*
+Realizar un procedimiento almacenado llamado SP_ChoferesEfectivo que reciba un (año como parámetro) y permita listar apellidos
+y nombres de los choferes que en ese año (únicamente) realizaron viajes que fueron abonados con la forma de pago 'Efectivo'.
+
+NOTA: Es indistinto si el viaje fue pagado o no. Utilizar la fecha de inicio del viaje para determinar el año del mismo.
+
+*/
+
 Create Procedure SP_ChoferesEfectivo(
     @Anio smallint
 )
@@ -64,7 +88,17 @@ From Choferes C
 Where Punto3.CantViajesEfectivoAnio = Punto3.CantViajesAnio And Punto3.CantViajesEfectivoAnio > 0
 End
 Go
--- 4)
+
+INSERT INTO Puntos
+SELECT ID, NULL, GETDATE(),100, DATEADD(DAY, 10, GETDATE()) FROM Clientes
+WHERE ID <=100
+
+--4)
+/*
+Realizar un trigger que al borrar un cliente, primero le quite todos los puntos (baja física) y 
+establecer a NULL todos los viajes de ese cliente. Luego, eliminar físicamente el cliente de la
+base de datos.
+*/
 Create Trigger TR_EliminarCliente On Clientes
 Instead Of Delete
 As
@@ -87,9 +121,25 @@ Begin
 
 End
 
+SELECT * FROM Puntos -- tabla vacia
+--Solucion:
+--------------------------Ejecutamos------------------------------------------------
+INSERT INTO Puntos
+SELECT ID, NULL, GETDATE(),100 * ID, DATEADD(DAY, 10, GETDATE()) FROM Clientes
+
+---------------------------VERIFICACION---------------------------------------------------------
+--DELETE FROM Clientes WHERE ID = 5
+--SELECT * FROM  Clientes where ID=5
+--SELECT * FROM Puntos WHEre IDCliente =5
+--SELECT * FROM  Viajes where ID=1219 
 Delete From Clientes Where ID = 40
+    
+    
 Go
 -- 5)
+/*Realizar un trigger que garantice que el Cliente sólo pueda calificar al Chofer si el viaje se encuentra pagado.
+Caso contrario indicarlo con un mensaje aclaratorio.
+*/
 Create Trigger TR_InsertarCalificacionAlChofer ON CalificacionesAlChofer
 After Insert
 As
