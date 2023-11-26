@@ -89,9 +89,7 @@ Where Punto3.CantViajesEfectivoAnio = Punto3.CantViajesAnio And Punto3.CantViaje
 End
 Go
 
-INSERT INTO Puntos
-SELECT ID, NULL, GETDATE(),100, DATEADD(DAY, 10, GETDATE()) FROM Clientes
-WHERE ID <=100
+
 
 --4)
 /*
