@@ -1,0 +1,154 @@
+ERRORES INTEGRADOR:
+
+D - El where debería incluir notas con 6.
+E - El error estaba en la falta del WHERE en el update Usuarios
+
+---------------------------------------------        Item  1       -----------------------------------------------------
+
+CREATE DATABASE Punto1
+GO
+USE Punto1
+CREATE TABLE Carreras(
+     IDCarrera INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+     Nombre VARCHAR(100) NOT NULL
+)
+GO
+CREATE TABLE Materias(
+     IDMateria BIGINT NOT NULL PRIMARY KEY IDENTITY(1,1),
+     IDCarrera INT NOT NULL FOREIGN KEY REFERENCES Carreras(IDCarrera),
+     Nombre VARCHAR(100) NOT NULL,
+     Anio TINYINT NOT NULL CHECK(Anio >0),
+     Cuatrimestre TINYINT 
+)
+GO
+CREATE TABLE Alumnos(
+    Legajo BIGINT NOT NULL PRIMARY KEY,
+    Apellidos VARCHAR(100) NOT NULL,
+    Nombres VARCHAR(100) NOT NULL
+)
+GO
+CREATE TABLE Sanciones(
+    IDSancion BIGINT NOT NULL PRIMARY KEY IDENTITY(1,1),
+    Legajo BIGINT NOT NULL FOREIGN KEY REFERENCES Alumnos(Legajo),
+    Fecha DATE NOT NULL,
+    Observacion varchar(500)
+)
+GO
+CREATE TABLE Examenes(
+    IDExamen BIGINT NOT NULL PRIMARY KEY IDENTITY(1,1),
+    IDMateria BIGINT NOT NULL FOREIGN KEY REFERENCES Materias(IDMateria),
+    Legajo BIGINT NOT NULL FOREIGN KEY REFERENCES Alumnos(Legajo),
+    Fecha DATE NOT NULL,
+    Nota DECIMAL(4,2) CHECK(Nota BETWEEN 0.00 AND 10.00)
+)
+
+
+---------------------------------------------        Item   2      -----------------------------------------------------
+/* Listar los mejores 5 estudiantes entre las carreras "Tecnicatura en Programación" e 
+"Ingeniería Mecánica" para otorgarles una beca. Para seleccionarlos a la beca,
+ el criterio de aceptación es el promedio general de los últimos dos años (es decir, el año actual y el anterior) y 
+ no haber registrado nunca una sanción.
+*/
+
+
+SELECT DISTINCT TOP(5)  A.Legajo, A.Apellidos, A.Nombres, 
+(SELECT AVG(E.Nota) FROM Examenes E
+WHERE (YEAR(E.Fecha) BETWEEN YEAR(GETDATE())-1 AND GETDATE()) AND  A.Legajo = E.Legajo)
+AS PromedioGeneral
+FROM Alumnos A
+INNER JOIN Examenes E ON A.Legajo = E.Legajo
+INNER JOIN Materias M ON E.IDMateria = M.IDMateria
+INNER JOIN Carreras C ON M.IDCarrera = C.IDCarrera
+WHERE C.Nombre IN('Tecnicatura en Programación','Ingeniería Mecánica') AND A.Legajo NOT IN(SELECT S.Legajo FROM Sanciones S)
+ORDER BY PromedioGeneral DESC 
+GO
+
+---------------------------------------------        Item  3       -----------------------------------------------------
+/* 
+Realizar un listado con legajo, nombre y apellidos de alumnos que no hayan registrado aplazos (nota menor a 6) en ningún examen.
+ El listado también debe indicar la cantidad de sanciones que el alumno registra.
+*/
+
+
+SELECT A.Legajo, A.Nombres, A.Apellidos, 
+(SELECT COUNT(S.IDSancion) FROM Sanciones S WHERE S.Legajo = A.Legajo)
+AS 'Cantidad de Sanciones' 
+FROM Alumnos A
+WHERE A.Legajo NOT IN(SELECT E.Legajo FROM Examenes E WHERE E.Nota<6)
+GO
+
+---------------------------------------------        Item   4      -----------------------------------------------------
+/*Hacer un listado con nombre de carrera, nombre de materia y año de aquellas materias que tengan un promedio
+ general mayor a 8. No se deben promediar los aplazos.*/
+
+
+SELECT C.Nombre, M.Nombre, M.Anio, AVG(E.Nota) AS 'Promedio general' FROM Examenes E 
+INNER JOIN Materias M ON  M.IDMateria = E.IDMateria
+INNER JOIN Carreras C ON C.IDCarrera = M.IDCarrera
+WHERE E.Nota>6  AND  E.IDMateria = M.IDMateria
+GROUP BY C.Nombre, M.Nombre, M.Anio
+HAVING AVG(E.Nota)>8
+
+---------------------------------------------        Item   5     -----------------------------------------------------
+/*Realizar un trigger que permita modificar el tipo de cuenta de un usuario si la capacidad de la cuenta 
+del usuario es superada cuando este sube un archivo. En ese caso, debe modificar su tipo de cuenta a la siguiente
+ disponible y registrar el cambio con su respectiva fecha en la tabla de CambiosDeCuenta. En cualquier caso se debe 
+ registrar el archivo al usuario.
+
+Aclaraciones: 
+Cuando un usuario debe hacer un "upgrade" de su cuenta, la nueva cuenta que se le otorgará siempre será la que está 
+identificada por su IDTipoCuenta actual más 1.
+El tipo de cuenta "Ilimitada" no puede ser nunca superada. Los MBs son ilimitados.
+*/
+CREATE trigger TR_InsertarArchivo ON Archivos
+INSTEAD of INSERT
+AS
+BEGIN
+     BEGIN TRY
+          BEGIN TRANSACTION
+          DECLARE @IDUSUARIO BIGINT
+          DECLARE @NOMBREARCHIVO VARCHAR(50) 
+          DECLARE @DESCRIPCION VARCHAR(250) 
+          DECLARE @EXTENSION VARCHAR(5)
+          DECLARE @TAMAÑO INT
+          DECLARE @FECHAPUBLI DATE
+
+          DECLARE @NOMBRECUENTA VARCHAR(50) 
+          DECLARE @IDCUENTAUSUARIO BIGINT
+          DECLARE @CAPACIDADDELACUENTA INT
+          DECLARE @TAMOCUPADO INT
+
+          SELECT  @IDUSUARIO = IDUsuario , @NOMBREARCHIVO = NombreArchivo , @DESCRIPCION = Descripcion, @EXTENSION = Extension, @TAMAÑO = TamañoEnMB, @FECHAPUBLI = FechaPublicacion
+          FROM inserted
+
+          SELECT @CAPACIDADDELACUENTA=TC.CapacidadEnMB, @IDCUENTAUSUARIO=TC.IDTipoCuenta, @NOMBRECUENTA=TC.Nombre
+          FROM  TiposCuentas TC
+          INNER JOIN Usuarios U ON U.IDTipoCuenta = TC.IDTipoCuenta
+          WHERE U.IDUsuario = @IDUSUARIO
+
+          SELECT @TAMOCUPADO=SUM(A.TamañoEnMB) FROM Archivos A WHERE A.IDUsuario = @IDUSUARIO
+   
+          IF ((@CAPACIDADDELACUENTA - @TAMOCUPADO) < @TAMAÑO) AND @NOMBRECUENTA <> 'Ilimitada'
+          BEGIN     
+             INSERT INTO Archivos (IDUsuario, NombreArchivo, Descripcion, Extension, TamañoEnMB, FechaPublicacion)
+             VALUES (@IDUsuario,@NOMBREARCHIVO,@DESCRIPCION,@EXTENSION,@TAMAÑO,@FECHAPUBLI)
+             INSERT INTO CambiosDeCuenta(IDUsuario, IDTipoCuentaAnterior,IDTipoCuentaActual,Fecha)
+             VALUES(@IDUSUARIO,@IDCUENTAUSUARIO,@IDCUENTAUSUARIO+1,GETDATE())
+             UPDATE Usuarios SET IDTipoCuenta = IDTipoCuenta + 1       
+          END ELSE 
+          BEGIN
+             INSERT INTO Archivos (IDUsuario, NombreArchivo, Descripcion, Extension, TamañoEnMB, FechaPublicacion)
+             VALUES (@IDUsuario,@NOMBREARCHIVO,@DESCRIPCION,@EXTENSION,@TAMAÑO,@FECHAPUBLI)
+          END
+          COMMIT TRANSACTION
+     END TRY
+     BEGIN CATCH
+     ROLLBACK TRANSACTION
+     RAISERROR('Error, No se pudo agregar el archivo',16,1)
+     END CATCH
+END
+
+
+
+
+
