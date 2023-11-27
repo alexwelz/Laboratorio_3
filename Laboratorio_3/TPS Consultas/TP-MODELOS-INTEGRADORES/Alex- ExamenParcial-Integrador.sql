@@ -1,3 +1,7 @@
+--Nombre base: WelzAlexGustavo.sql
+--Legajo: 24583
+--Alumno: Alex Gustavo Welz
+
 CREATE DATABASE Punto1_Exam_Practica
 GO 
 USE Punto1_Exam_Practica
@@ -11,7 +15,7 @@ CREATE TABLE Materias(
 	IDMateria BIGINT NOT NULL PRIMARY KEY IDENTITY(1,1),
 	IDCarrera BIGINT NOT NULL FOREIGN KEY REFERENCES Carreras(IDCarrera),
 	Nombre VARCHAR(100) NOT NULL,
-	Año SMALLINT NOT NULL CHECK (Año >0),
+	AÃ±o SMALLINT NOT NULL CHECK (AÃ±o >0),
 	Cuatrimestre TINYINT NULL
 )
 GO
@@ -39,10 +43,10 @@ CREATE TABLE Sanciones(
 
 GO
 /* 2)
-Listar los mejores 5 estudiantes entre las carreras "Tecnicatura en Programación" e
-"Ingeniería Mecánica" para otorgarles una beca. Para seleccionarlos a la beca, el
-criterio de aceptación es el promedio general de los últimos dos años (es decir, el
-año actual y el anterior) y no haber registrado nunca una sanción
+Listar los mejores 5 estudiantes entre las carreras "Tecnicatura en ProgramaciÃ³n" e
+"IngenierÃ­a MecÃ¡nica" para otorgarles una beca. Para seleccionarlos a la beca, el
+criterio de aceptaciÃ³n es el promedio general de los Ãºltimos dos aÃ±os (es decir, el
+aÃ±o actual y el anterior) y no haber registrado nunca una sanciÃ³n
 */
 
 SELECT DISTINCT TOP(5) A.Legajo, A.Apellidos, A.Nombres, 
@@ -56,14 +60,14 @@ Left Join Sanciones S On S.Legajo = A.Legajo
 Inner join Examenes E ON E.Legajo = A.Legajo
 INner join Materias M ON M.IDMateria = E.IDMateria
 Inner join Carreras C ON C.IDCarrera = M.IDCarrera
-WHERE C.Nombre IN ('Tecnicatura en Programación','Ingeniería Mecánica')
+WHERE C.Nombre IN ('Tecnicatura en ProgramaciÃ³n','IngenierÃ­a MecÃ¡nica')
 AND A.Legajo NOT IN (SELECT Legajo FROM Sanciones )
 GROUP BY A.Legajo, A.Apellidos, A.Nombres
 ORDER BY PromedioGral DESC
 GO
 /* 3)
 Realizar un listado con legajo, nombre y apellidos de alumnos que no hayan
-registrado aplazos (nota menor a 6) en ningún examen. El listado también debe
+registrado aplazos (nota menor a 6) en ningÃºn examen. El listado tambiÃ©n debe
 indicar la cantidad de sanciones que el alumno registra
 */
 SELECT A.Legajo, A.Apellidos, A.Nombres, COUNT(S.IDSancion) As 'Cantidad Sanciones'
@@ -76,11 +80,11 @@ HAVING COUNT(S.IDSancion) >= 6
 
 GO
 /* 4
- Hacer un listado con nombre de carrera, nombre de materia y año de aquellas
+ Hacer un listado con nombre de carrera, nombre de materia y aÃ±o de aquellas
 materias que tengan un promedio general mayor a 8. No se deben promediar los
 aplazos.
 */
-SELECT C.Nombre AS Carrera, M.Nombre AS Materia, YEAR(M.Año) AS Año
+SELECT C.Nombre AS Carrera, M.Nombre AS Materia, YEAR(M.AÃ±o) AS AÃ±o
 FROM Carreras C
 INNER JOIN Materias M ON M.IDCarrera = C.IDCarrera
 WHERE M.IDMateria IN (
@@ -94,7 +98,9 @@ Realizar un trigger que permita modificar el tipo de cuenta de un usuario si la
 capacidad de la cuenta del usuario es superada cuando este sube un archivo. En ese
 caso, debe modificar su tipo de cuenta a la siguiente disponible y registrar el cambio
 con su respectiva fecha en la tabla de CambiosDeCuenta. En cualquier caso se debe
-registrar el archivo al usuario.*/CREATE TRIGGER TR_SubirArchivo ON Archivos
+registrar el archivo al usuario.
+*/
+CREATE TRIGGER TR_SubirArchivo ON Archivos
 AFTER INSERT
 
 AS
@@ -103,12 +109,12 @@ BEGIN
         BEGIN TRANSACTION 
 
         DECLARE @IDUsario Bigint
-		DECLARE @TamañoArchivo int
+		DECLARE @TamaÃ±oArchivo int
 		DECLARE @IDCuentaActual bigint 
 		DECLARE @CapacidadActualArchivo int
 		DECLARE @NombreCuenta varchar(50)
 
-		SELECT @IDUsario = IDUsuario, @TamañoArchivo = TamañoEnMB FROM inserted i
+		SELECT @IDUsario = IDUsuario, @TamaÃ±oArchivo = TamaÃ±oEnMB FROM inserted i
 
 		SELECT @IDCuentaActual = U.IDTipoCuenta, @CapacidadActualArchivo = TC.CapacidadEnMB,
 		@NombreCuenta = TC.Nombre
@@ -116,7 +122,7 @@ BEGIN
 		INNER JOIN TipoCuentas TC ON TC.IDTipoCuenta = U.IDTipoCuenta
 		Where U.IDUsuarios = @IDUsario
        
-		IF @TamañoArchivo > @CapacidadActualArchivo AND @NombreCuenta <> 'Ilimitada'
+		IF @TamaÃ±oArchivo > @CapacidadActualArchivo AND @NombreCuenta <> 'Ilimitada'
 		BEGIN 
 
 		UPDATE Usuarios SET IDTipoCuenta = @IDCuentaActual + 1 WHERE IDUsuarios = @IDUsario
