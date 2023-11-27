@@ -32,6 +32,19 @@ CREATE TABLE ActividadesxSocio (
 --2)Haciendo uso de las tablas realizadas en el punto anterior resolver la siguiente consulta de selección:
 -- Listar todos los datos de todos los socios que hayan realizado todas las actividades que ofrece el club.
 
+SELECT * FROM Socios S
+WHERE S.IDSocio NOT IN (
+	SELECT AXS.IDSocio FROM ActividadesxSocio AXS
+	WHERE AXS.IDActividad NOT IN (
+	
+		SELECT A.IDActividad FROM Actividades A 
+        WHERE A.IDActividad = AXS.IDActividad AND S.IDSocio = AXS.IDSocio
+	)
+
+)
+GO
+
+--Otra forma pero asi el profe no la explico nunca!
 SELECT S.ID_Socio, S.Apellidos, S.Nombre, S.FechaNacimiento, S.FechaAsociacion, S.Estado
 FROM Socios S
 WHERE NOT EXISTS (
@@ -42,6 +55,8 @@ WHERE NOT EXISTS (
         WHERE ActPorSoc.ID_Socio = S.ID_Socio AND ActPorSoc.ID_Actividad = A.ID_Actividad
     )
 );
+
+
 
 --3)Haciendo uso de la base de datos que se encuentra en el Campus Virtual resolver:
 --Hacer un trigger que al ingresar un registro no permita que un docente pueda tener una materia con el 
