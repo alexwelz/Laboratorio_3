@@ -3,7 +3,7 @@
 --VISTAS
 
 CREATE VIEW VW_NOMBREVISTA 
-
+AS
 	--CONSULTA
 GO
 
@@ -11,14 +11,14 @@ GO
 
 
 --STORED PROCEDURE
-
+	
 CREATE PROCEDURE SP_NOMBREPROCEDURE(
     @PARAMETRO --TIPO DATO (BIGINT-SMALLINT-BIT....)
 )
 AS
 BEGIN
-
-	--DESARROLLO CONUSLTA
+	
+--DESARROLLO CONUSLTA
 END
 GO
 
@@ -33,35 +33,36 @@ CREATE TRIGGER TR_NOMBRETIGGER ON TABLA_DIRIGIDA
 --INSTEAD OF DELETE / INSERT
 AS
 BEGIN
-    BEGIN TRY    --> Todo lo que esta dentro del bloque try podria pasar
-        BEGIN TRAN -- BEGIN TRANSACTION (es lo mismo)
-
-        DECLARE @VARIABLE --TIPO DATO (BIGINT-SMALLINT-BIT....)
-        SET @ID = (Select ID From inserted) --inserted, deleted --> son tablas temporales
-        SET @ID = (Select ID From deleted)
-        
-       --CONSULTAS 
-	
-		COMMIT --COMMIT TRANSACTION (es lo mismo)
-    END TRY
-    BEGIN CATCH
-       ROLLBACK --ROLLBACK TRANSACTION (es lo mismo)
-        RAISERROR('Muestra el mensaje de error en pantalla', 16, 1)
+	BEGIN TRY
+		BEGIN TRANSACTION
 		
-		--OTRA FORMA MOSTRAR ERROR
-		 --END
-        --PRINT error_message()
-    END CATCH
-
+		COMMIT TRANSACTION
+		PRINT ('Realizado con exito!');
+	END TRY
+	BEGIN CATCH
+		ROLLBACK TRANSACTION 
+		RAISERROR('Error al ejecutatar trigger',16,1)
+		 PRINT ERROR_MESSAGE();
+	END CATCH 
 END
-GO
 
 
 -----------------------------------------------------------
 
 
---FUNCIONES -->  EJEMPLO RESOLUCION
+--FUNCIONES 
+CREATE FUNCTION NOMBREFUNCION (@PARAMETRO TIPO DATO)
+RETURNS TIPO DATO
+AS 
+BEGIN
+	DECLARE
 
+	RETURN @VARIABLE A DEVOLVER
+END
+GO
+		
+-----------------------------------------------------------------
+		
 Create Function ObtenerAlias(@ID_Usuario bigint)
 returns varchar(30)
 as
