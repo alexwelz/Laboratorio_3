@@ -33,23 +33,26 @@ GO
 realizado todas las actividades que ofrece el club.
 */
 
-SELECT * 
-FROM Socios S
-INNER JOIN ActividadesxSocio AXS ON AXS.IDSocio = S.IDSocio
-INNER JOIN Actividades A ON A.IDActividad = AXS.IDActividad
-WHERE NOT EXISTS ( SELECT A.IDActividad FROM Actividades A
-		WHERE NOT EXISTS (
-			SELECT AXS.IDSocio FROM ActividadesxSocio AXS
-			WHERE AXS.IDSocio = S.IDSocio AND AXS.IDActividad = A.IDActividad
-		)
-)
+SELECT DISTINCT P2.IDSocio, P2.Apellidos, P2.Nombres,P2.FechaNacimiento ,P2.FechaAsociacion, P2.Estado FROM (
+    SELECT 
+        S.*,
+        COUNT(AXS.IDActividad) AS CantidadActividadesxSocio,
+        (SELECT COUNT(*) FROM Actividades A WHERE A.Estado = 1) AS TotalActividades
+    FROM Socios S
+    LEFT JOIN ActividadxSocio AXS ON AXS.IDSocio = S.IDSocio
+    LEFT  JOIN Actividades A ON A.IDActividad = AXS.IDActividad
+    GROUP BY S.IDSocio, S.Apellidos, S.Nombres,S.FechaNacimiento ,S.FechaAsociacion, S.Estado
+) P2
+WHERE P2.CantidadActividadesxSocio = P2.TotalActividades
+AND P2.Estado = 1
+	
 GO
 
 /* 3)
 Hacer un trigger que al ingresar un registro no permita que un docente pueda
 tener una materia con el cargo de profesor (IDCargo = 1) si no tiene una
-antigüedad de al menos 5 años. Tampoco debe permitir que haya más de un
-docente con el cargo de profesor (IDCargo = 1) en la misma materia y año. Caso
+antigÃ¼edad de al menos 5 aÃ±os. Tampoco debe permitir que haya mÃ¡s de un
+docente con el cargo de profesor (IDCargo = 1) en la misma materia y aÃ±o. Caso
 contrario registrar el docente a la planta docente.
 */
 
@@ -64,23 +67,23 @@ BEGIN
 			DECLARE @Legajo bigint;
 			DECLARE @ID_Materia bigint;
 			DECLARE @ID_Cargo tinyint;
-			DECLARE @Año int;
+			DECLARE @AÃ±o int;
 			
-			DECLARE @AñoActual INT = YEAR(GETDATE())
+			DECLARE @AÃ±oActual INT = YEAR(GETDATE())
 
-			SELECT @Legajo = Legajo, @ID_Materia = ID_Materia, @ID_Cargo = ID_Cargo, @Año = Año
+			SELECT @Legajo = Legajo, @ID_Materia = ID_Materia, @ID_Cargo = ID_Cargo, @AÃ±o = AÃ±o
 			FROM inserted
 
 
-			IF @ID_Cargo = 1 AND (SELECT @AñoActual - @Año FROM PlantaDocente PD Where Legajo = @Legajo) > 5
+			IF @ID_Cargo = 1 AND (SELECT @AÃ±oActual - @AÃ±o FROM PlantaDocente PD Where Legajo = @Legajo) > 5
 			BEGIN 
-				RAISERROR('El docente no tiene mas de 5 años de antiguedad', 16, 1)
+				RAISERROR('El docente no tiene mas de 5 aÃ±os de antiguedad', 16, 1)
 				ROLLBACK TRANSACTION
 				RETURNS
 
-			IF(SELECT COUNT(*) FROM PlantaDocente PD WHERE PD.ID_Cargo = 1 and PD.Año = @Año and PD.ID_Materia = @ID_Materia) > 1
+			IF(SELECT COUNT(*) FROM PlantaDocente PD WHERE PD.ID_Cargo = 1 and PD.AÃ±o = @AÃ±o and PD.ID_Materia = @ID_Materia) > 1
 			BEGIN 
-				RAISERROR(' No puede haber mas de un doncente en la misma materia y año', 16, 1)
+				RAISERROR(' No puede haber mas de un doncente en la misma materia y aÃ±o', 16, 1)
 				ROLLBACK TRANSACTION
 				RETURNS
 	
@@ -96,12 +99,12 @@ END
 
 
 /* 4)
-A partir de un legajo docente y un año devuelva la
-cantidad de horas que dedicará esa persona a la docencia en el año. La cantidad
-de horas es un número entero >= 0.
+A partir de un legajo docente y un aÃ±o devuelva la
+cantidad de horas que dedicarÃ¡ esa persona a la docencia en el aÃ±o. La cantidad
+de horas es un nÃºmero entero >= 0.
 */
 GO
-CREATE FUNCTION Cant_HorasDocencia(@Legajo bigint, @Año smallint)
+CREATE FUNCTION Cant_HorasDocencia(@Legajo bigint, @AÃ±o smallint)
 RETURNS INT
 AS 
 BEGIN 
@@ -112,7 +115,7 @@ BEGIN
 	WHERE M.ID_Materia IN ( 
 		SELECT ID_Materia 
 		FROM PlantaDocente PD
-		WHERE PD.Legajo = @Legajo AND PD.Año = @Año
+		WHERE PD.Legajo = @Legajo AND PD.AÃ±o = @AÃ±o
 	)
 
 	RETURN @HsSemanales;
