@@ -28,6 +28,42 @@ CREATE TABLE ActividadesxSocio(
 	FechaInscripcion date not null
 )
 GO
+INSERT INTO Actividades (Nombre, FechaDisponibleDesde, CostoActividad, Estado)
+VALUES 
+( 'Clase de Yoga', '2023-01-01', 15.00, 1),
+( 'Entrenamiento en Grupo', '2023-02-01', 20.00, 1),
+( 'Natación', '2023-03-01', 25.00, 1),
+( 'Ciclismo', '2023-04-01', 18.00, 1),
+( 'Pilates', '2023-05-01', 22.00, 1),
+( 'Running', '2023-06-01', 15.00, 1),
+( 'Entrenamiento Funcional', '2023-07-01', 30.00, 1),
+( 'Spinning', '2023-08-01', 25.00, 1)
+GO
+
+
+INSERT INTO Socios ( Apellidos, Nombres, FechaNacimiento, FechaAsociacion, Estado)
+VALUES 
+( 'López', 'Juan', '1990-05-15', '2022-01-01', 1),
+( 'González', 'María', '1985-09-22', '2022-02-01', 1),
+( 'Martínez', 'Carlos', '1995-07-10', '2022-03-01', 1),
+( 'Rodríguez', 'Ana', '1988-12-05', '2022-04-01', 1),
+( 'Díaz', 'Pedro', '1992-08-20', '2022-05-01', 1),
+( 'Fernández', 'Laura', '1983-06-12', '2022-06-01', 1),
+( 'Gómez', 'Luis', '1998-03-25', '2022-07-01', 1),
+( 'Pérez', 'Carolina', '1987-11-18', '2022-08-01', 1)
+
+GO
+INSERT INTO ActividadxSocio(IDSocio, IDActividad, FechaInscripcion)
+VALUES 
+(1, 1, '2023-01-05'),
+(1, 2, '2023-02-10'),
+(2, 3, '2023-03-15'),
+(2, 4, '2023-04-20'),
+(3, 5, '2023-05-25'),
+(3, 6, '2023-06-30'),
+(4, 7, '2023-07-05'),
+(4, 8, '2023-08-10')
+GO
 /*  2
  Listar todos los datos de todos los socios que hayan
 realizado todas las actividades que ofrece el club.
@@ -96,14 +132,14 @@ BEGIN
 END
 
 
-
+GO
 
 /* 4)
 A partir de un legajo docente y un año devuelva la
 cantidad de horas que dedicará esa persona a la docencia en el año. La cantidad
 de horas es un número entero >= 0.
 */
-GO
+
 CREATE FUNCTION Cant_HorasDocencia(@Legajo bigint, @Año smallint)
 RETURNS INT
 AS 
