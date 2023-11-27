@@ -32,18 +32,29 @@ CREATE TABLE ActividadesxSocio (
 --2)Haciendo uso de las tablas realizadas en el punto anterior resolver la siguiente consulta de selección:
 -- Listar todos los datos de todos los socios que hayan realizado todas las actividades que ofrece el club.
 
-SELECT * FROM Socios S
-WHERE S.IDSocio NOT IN (
-	SELECT AXS.IDSocio FROM ActividadesxSocio AXS
-	WHERE AXS.IDActividad NOT IN (
-	
-		SELECT A.IDActividad FROM Actividades A 
-        WHERE A.IDActividad = AXS.IDActividad AND S.IDSocio = AXS.IDSocio
-	)
 
-)
+SELECT DISTINCT P2.IDSocio, P2.Apellidos, P2.Nombres,P2.FechaNacimiento ,P2.FechaAsociacion, P2.Estado FROM (
+    SELECT 
+        S.*,
+        COUNT(AXS.IDActividad) AS CantidadActividadesxSocio,
+        (SELECT COUNT(*) FROM Actividades A WHERE A.Estado =1) AS TotalActividades
+    FROM Socios S
+    LEFT JOIN ActividadxSocio AXS ON AXS.IDSocio = S.IDSocio
+    LEFT  JOIN Actividades A ON A.IDActividad = AXS.IDActividad
+    GROUP BY S.IDSocio, S.Apellidos, S.Nombres,S.FechaNacimiento ,S.FechaAsociacion, S.Estado
+) P2
+WHERE P2.CantidadActividadesxSocio = P2.TotalActividades
+AND P2.Estado=1
+
 GO
-
+--Otra forma 
+SELECT S.ID_SOCIO, S.NOMBRES, S.APELLIDOS 
+FROM SOCIOS S		
+INNER JOIN ACTIVIDADES_X_SOCIO AXS ON AXS.ID_SOCIO = S.ID_SOCIO
+GROUP BY S.ID_SOCIO, S.NOMBRES, S.APELLIDOS
+HAVING COUNT(DISTINCT AXS.ID_ACTIVIDAD) = (SELECT COUNT(*) FROM ACTIVIDADES);
+Go
+	
 --Otra forma pero asi el profe no la explico nunca!
 SELECT S.ID_Socio, S.Apellidos, S.Nombre, S.FechaNacimiento, S.FechaAsociacion, S.Estado
 FROM Socios S
